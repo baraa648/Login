@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حجز الفخامة</title>
+    <title>حجز الفخامة | الحجز السريع</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
         
@@ -66,6 +66,58 @@
 <body>
 
     <div class="card">
+        <h2>✨ حجز الخدمة</h2>
+        <input type="text" id="name" placeholder="الاسم الكريم">
+        <input type="tel" id="phone" placeholder="رقم الهاتف (مثل 010xxxxxxxx)">
+        <button onclick="submitOrder()">تأكيد الطلب</button>
+    </div>
+
+    <script>
+        async function submitOrder() {
+            const name = document.getElementById('name').value;
+            let phone = document.getElementById('phone').value;
+
+            // تحويل الرقم للصيغة الدولية
+            if (phone.startsWith("01")) { phone = "+2" + phone; }
+            
+            // التحقق من الأرقام
+            const isValid = /^\+201[0-25]\d{8}$/.test(phone) || /^05\d{8}$/.test(phone);
+
+            if (!name || !phone) { alert("⚠️ يرجى ملء جميع الحقول!"); return; }
+            if (!isValid) { alert("❌ رقم الهاتف غير صحيح!"); return; }
+            if (localStorage.getItem(phone)) { alert("⚠️ هذا الرقم سجل طلب مسبقاً!"); return; }
+
+            // نص الرسالة للعميل
+            const welcomeMsg = "أهلاً بك! لقد تلقينا طلب حجزك بنجاح، وسيقوم فريقنا بمراجعة البيانات والرد عليك في أقرب وقت ممكن. شكراً لثقتكم بنا! ✨";
+            const whatsappLink = `https://wa.me/${phone.replace('+', '')}?text=${encodeURIComponent(welcomeMsg)}`;
+            
+            // نص الرسالة لك على تليجرام
+            const msg = `🚀 *طلب جديد*%0A👤 *الاسم:* ${name}%0A📱 *الهاتف:* ${phone}`;
+            const keyboard = JSON.stringify({
+                inline_keyboard: [[{ text: "💬 مراسلة العميل واتساب", url: whatsappLink }]]
+            });
+
+            // إرسال البيانات
+            const token = "8903499642:AAF7pr2pgezLcHuoGs2p9BIOzv5Sk65TpUM";
+            const chatId = "8827840980";
+            const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(msg)}&parse_mode=Markdown&reply_markup=${encodeURIComponent(keyboard)}`;
+
+            try {
+                const res = await fetch(url);
+                if(res.ok) {
+                    localStorage.setItem(phone, "done");
+                    alert("✅ تم الحجز بنجاح! سيتم تحويلك للواتساب.");
+                    window.location.href = whatsappLink;
+                } else {
+                    alert("حدث خطأ، حاول مرة أخرى.");
+                }
+            } catch (error) {
+                alert("تأكد من الاتصال بالإنترنت.");
+            }
+        }
+    </script>
+</body>
+</html>
         <h2>✨ حجز الخدمة</h2>
         <input type="text" id="name" placeholder="الاسم الكريم">
         <input type="tel" id="phone" placeholder="رقم الهاتف (مثل 010xxxxxxxx)">
