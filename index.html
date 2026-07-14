@@ -2,91 +2,88 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>حجزك بضغطة زر</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حجز الفخامة</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
         
         body { 
             font-family: 'Cairo', sans-serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-            margin: 0; 
-            padding: 10px; /* إضافة مسافة للحواف */
-        }
-        
-        .card { 
-            background: rgba(255, 255, 255, 0.15); 
-            backdrop-filter: blur(15px); 
-            padding: 25px; 
-            border-radius: 25px; 
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); 
-            border: 1px solid rgba(255, 255, 255, 0.2); 
-            width: 100%; 
-            max-width: 380px; 
-            text-align: center; 
-            color: white; 
+            background: #0a0a0a; /* خلفية سوداء */
+            display: flex; justify-content: center; align-items: center; 
+            min-height: 100vh; margin: 0; 
         }
 
-        h2 { margin-bottom: 20px; font-size: 1.5rem; }
-        
+        .card { 
+            background: rgba(255, 255, 255, 0.05); 
+            backdrop-filter: blur(15px); 
+            padding: 40px; 
+            border-radius: 30px; 
+            border: 1px solid #d4af37; /* إطار ذهبي */
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+            width: 90%; max-width: 400px; text-align: center; color: #d4af37; 
+        }
+
+        h2 { font-size: 1.8rem; margin-bottom: 20px; }
+
         input { 
-            width: 100%; 
-            padding: 15px; 
-            margin: 10px 0; 
-            border: none; 
-            border-radius: 15px; 
-            box-sizing: border-box; /* لمنع خروج الـ input عن حدود البطاقة */
-            background: rgba(255,255,255,0.2); 
-            color: white; 
-            font-size: 16px; /* حجم خط مناسب للموبايل لمنع الزووم التلقائي */
-            outline: none; 
+            width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #d4af37; 
+            border-radius: 12px; background: rgba(0,0,0,0.3); color: white; 
+            font-size: 16px; outline: none; box-sizing: border-box;
         }
 
         button { 
-            width: 100%; 
-            padding: 15px; 
-            background: #ffffff; 
-            color: #764ba2; 
-            border: none; 
-            border-radius: 15px; 
-            font-weight: bold; 
-            font-size: 16px;
-            cursor: pointer; 
-            transition: 0.3s; 
-            margin-top: 15px; 
+            width: 100%; padding: 15px; background: #d4af37; color: black; 
+            border: none; border-radius: 12px; font-weight: bold; font-size: 16px;
+            cursor: pointer; transition: 0.3s; margin-top: 15px; 
         }
         
-        button:active { transform: scale(0.98); }
+        button:hover { background: #f1c40f; }
+
+        .admin-btn { background: transparent; color: #555; font-size: 12px; margin-top: 20px; text-decoration: underline; cursor: pointer; border: none; }
     </style>
 </head>
 <body>
     <div class="card">
         <h2>✨ حجز الخدمة</h2>
         <input type="text" id="name" placeholder="الاسم الكريم">
-        <input type="number" id="phone" placeholder="رقم الهاتف (مثل 01012345678)">
+        <input type="tel" id="phone" placeholder="010xxxxxxxx">
         <button onclick="submitOrder()">تأكيد الطلب</button>
+        <button class="admin-btn" onclick="clearData()">مسح جميع السجلات</button>
     </div>
 
     <script>
-        function submitOrder() {
+        async function submitOrder() {
             const name = document.getElementById('name').value;
-            const phone = document.getElementById('phone').value;
+            let phone = document.getElementById('phone').value;
 
-            // التحقق (مصر 11 رقم، السعودية 10 أرقام)
-            const isEgypt = /^01[0-25]\d{8}$/.test(phone);
-            const isKSA = /^05\d{8}$/.test(phone);
+            if (phone.startsWith("01")) { phone = "+2" + phone; }
+            const isValid = /^\+201[0-25]\d{8}$/.test(phone) || /^05\d{8}$/.test(phone);
 
-            if (!isEgypt && !isKSA) { alert("❌ الرقم غير صحيح! تأكد من مفتاح الدولة."); return; }
-            if (localStorage.getItem(phone)) { alert("⚠️ هذا الرقم سجل من قبل!"); return; }
+            if (!isValid) { alert("❌ رقم غير صحيح!"); return; }
+            if (localStorage.getItem(phone)) { alert("⚠️ الرقم مسجل مسبقاً!"); return; }
 
-            const msg = `🚀 *طلب جديد*%0A👤 *الاسم:* ${name}%0A📱 *الهاتف:* ${phone}%0A🌍 *المصدر:* موقع الموبايل`;
-            
-            fetch(`https://api.telegram.org/bot8903499642:AAF7pr2pgezLcHuoGs2p9BIOzv5Sk65TpUM/sendMessage?chat_id=8827840980&text=${msg}&parse_mode=Markdown`)
-            .then(res => { if(res.ok) { localStorage.setItem(phone, "done"); alert("✅ تم وصول طلبك بنجاح!"); } });
+            const msg = `🚀 *طلب جديد*%0A👤 *الاسم:* ${name}%0A📱 *الهاتف:* ${phone}`;
+            const whatsappLink = `https://wa.me/${phone.replace('+', '')}`;
+            const keyboard = JSON.stringify({
+                inline_keyboard: [[{ text: "💬 مراسلة العميل واتساب", url: whatsappLink }]]
+            });
+
+            const url = `https://api.telegram.org/bot8903499642:AAF7pr2pgezLcHuoGs2p9BIOzv5Sk65TpUM/sendMessage?chat_id=8827840980&text=${encodeURIComponent(msg)}&parse_mode=Markdown&reply_markup=${encodeURIComponent(keyboard)}`;
+
+            const res = await fetch(url);
+            if(res.ok) {
+                localStorage.setItem(phone, "done");
+                alert("✅ تم إرسال الطلب!");
+            }
+        }
+
+        // دالة مسح السجلات
+        function clearData() {
+            if(confirm("هل أنت متأكد؟ سيتم مسح كافة الأرقام المسجلة محلياً.")) {
+                localStorage.clear();
+                alert("✅ تم المسح بنجاح!");
+            }
         }
     </script>
 </body>
