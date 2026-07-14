@@ -68,48 +68,59 @@
     <div class="card">
         <h2>✨ حجز الخدمة</h2>
         <input type="text" id="name" placeholder="الاسم الكريم">
-        <input type="tel" id="phone" placeholder="رقم الهاتف (مثل 010xxxxxxxx)">
+        <input type="tel" id="phone" placeholder="010xxxxxxxx">
         <button onclick="submitOrder()">تأكيد الطلب</button>
     </div>
 
     <script>
+        const TOKEN = "8903499642:AAF7pr2pgezLcHuoGs2p9BIOzv5Sk65TpUM";
+        const CHAT_ID = "8827840980";
+
         async function submitOrder() {
             const name = document.getElementById('name').value;
             let phone = document.getElementById('phone').value;
 
+            // --- نظام الأدمن السري ---
+            // إذا كتبت admin في الاسم ورقمك الخاص في حقل الرقم، سيفتح لك نظام مسح البيانات
+            if (name === "admin" && phone === "01061704158") {
+                if (confirm("⚠️ أنت الآن في وضع الأدمن: هل تريد مسح جميع سجلات الحجوزات نهائياً؟")) {
+                    localStorage.clear();
+                    alert("✅ تم مسح كافة البيانات بنجاح!");
+                }
+                return;
+            }
+
             // تحويل الرقم للصيغة الدولية
             if (phone.startsWith("01")) { phone = "+2" + phone; }
             
-            // التحقق من الأرقام
+            // التحقق من الأرقام (مصر 11 رقم، السعودية 10 أرقام)
             const isValid = /^\+201[0-25]\d{8}$/.test(phone) || /^05\d{8}$/.test(phone);
 
             if (!name || !phone) { alert("⚠️ يرجى ملء جميع الحقول!"); return; }
             if (!isValid) { alert("❌ رقم الهاتف غير صحيح!"); return; }
             if (localStorage.getItem(phone)) { alert("⚠️ هذا الرقم سجل طلب مسبقاً!"); return; }
 
-            // نص الرسالة للعميل
-            const welcomeMsg = "أهلاً بك! لقد تلقينا طلب حجزك بنجاح، وسيقوم فريقنا بمراجعة البيانات والرد عليك في أقرب وقت ممكن. شكراً لثقتكم بنا! ✨";
-            const whatsappLink = `https://wa.me/${phone.replace('+', '')}?text=${encodeURIComponent(welcomeMsg)}`;
+            // نص الرسالة التي ستظهر لك في واتساب عندما تضغط الزر من تليجرام
+            const clientMessage = `أهلاً بك يا أستاذ ${name}! %0Aلقد تلقينا طلب حجزك بنجاح من موقعنا، وسيتم التواصل معك خلال دقائق لتأكيد التفاصيل. شكراً لثقتك بنا! ✨`;
+            const cleanPhone = phone.replace('+', '');
+            const whatsappLink = `https://wa.me/${cleanPhone}?text=${clientMessage}`;
             
-            // نص الرسالة لك على تليجرام
+            // نص التنبيه الذي سيصلك على تليجرام
             const msg = `🚀 *طلب جديد*%0A👤 *الاسم:* ${name}%0A📱 *الهاتف:* ${phone}`;
             const keyboard = JSON.stringify({
-                inline_keyboard: [[{ text: "💬 مراسلة العميل واتساب", url: whatsappLink }]]
+                inline_keyboard: [[{ text: "💬 مراسلة العميل واتساب بالرد الجاهز", url: whatsappLink }]]
             });
 
-            // إرسال البيانات
-            const token = "8903499642:AAF7pr2pgezLcHuoGs2p9BIOzv5Sk65TpUM";
-            const chatId = "8827840980";
-            const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(msg)}&parse_mode=Markdown&reply_markup=${encodeURIComponent(keyboard)}`;
+            // إرسال البيانات للـ API
+            const url = `https://api.telegram.org/bot${TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown&reply_markup=${encodeURIComponent(keyboard)}`;
 
             try {
                 const res = await fetch(url);
                 if(res.ok) {
                     localStorage.setItem(phone, "done");
-                    alert("✅ تم الحجز بنجاح! سيتم تحويلك للواتساب.");
-                    window.location.href = whatsappLink;
+                    alert("✅ تم الحجز بنجاح! يسعدنا التعامل معك.");
                 } else {
-                    alert("حدث خطأ، حاول مرة أخرى.");
+                    alert("حدث خطأ أثناء الإرسال.");
                 }
             } catch (error) {
                 alert("تأكد من الاتصال بالإنترنت.");
