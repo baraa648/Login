@@ -10,8 +10,12 @@
         body { 
             font-family: 'Cairo', sans-serif; 
             background: #0a0a0a; 
-            display: flex; justify-content: center; align-items: center; 
-            min-height: 100vh; margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px;
         }
 
         .card { 
@@ -21,31 +25,50 @@
             border-radius: 30px; 
             border: 1px solid #d4af37; 
             box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
-            width: 90%; max-width: 400px; text-align: center; color: #d4af37; 
+            width: 100%; 
+            max-width: 400px; 
+            text-align: center; 
+            color: #d4af37; 
         }
 
-        h2 { font-size: 1.8rem; margin-bottom: 20px; }
+        h2 { font-size: 1.8rem; margin-bottom: 20px; color: #d4af37; }
 
         input { 
-            width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #d4af37; 
-            border-radius: 12px; background: rgba(0,0,0,0.3); color: white; 
-            font-size: 16px; outline: none; box-sizing: border-box;
+            width: 100%; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border: 1px solid #d4af37; 
+            border-radius: 12px; 
+            background: rgba(0,0,0,0.3); 
+            color: white; 
+            font-size: 16px; 
+            outline: none; 
+            box-sizing: border-box;
         }
 
         button { 
-            width: 100%; padding: 15px; background: #d4af37; color: black; 
-            border: none; border-radius: 12px; font-weight: bold; font-size: 16px;
-            cursor: pointer; transition: 0.3s; margin-top: 15px; 
+            width: 100%; 
+            padding: 15px; 
+            background: #d4af37; 
+            color: black; 
+            border: none; 
+            border-radius: 12px; 
+            font-weight: bold; 
+            font-size: 16px; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            margin-top: 15px; 
         }
         
-        button:hover { background: #f1c40f; }
+        button:hover { background: #f1c40f; transform: scale(1.02); }
     </style>
 </head>
 <body>
+
     <div class="card">
         <h2>✨ حجز الخدمة</h2>
         <input type="text" id="name" placeholder="الاسم الكريم">
-        <input type="tel" id="phone" placeholder="010xxxxxxxx">
+        <input type="tel" id="phone" placeholder="رقم الهاتف (مثل 010xxxxxxxx)">
         <button onclick="submitOrder()">تأكيد الطلب</button>
     </div>
 
@@ -54,46 +77,40 @@
             const name = document.getElementById('name').value;
             let phone = document.getElementById('phone').value;
 
+            // تحويل الرقم للصيغة الدولية (في حال كان يبدأ بـ 01)
             if (phone.startsWith("01")) { phone = "+2" + phone; }
+            
+            // التحقق من الرقم (مصر 11 رقم، السعودية 10 أرقام)
             const isValid = /^\+201[0-25]\d{8}$/.test(phone) || /^05\d{8}$/.test(phone);
 
-            if (!isValid) { alert("❌ رقم غير صحيح!"); return; }
-            if (localStorage.getItem(phone)) { alert("⚠️ الرقم مسجل مسبقاً!"); return; }
+            if (!name || !phone) { alert("⚠️ يرجى ملء جميع الحقول!"); return; }
+            if (!isValid) { alert("❌ رقم الهاتف غير صحيح، تأكد من مفتاح الدولة!"); return; }
+            if (localStorage.getItem(phone)) { alert("⚠️ هذا الرقم سجل طلب مسبقاً!"); return; }
 
+            // تجهيز الرسالة
             const msg = `🚀 *طلب جديد*%0A👤 *الاسم:* ${name}%0A📱 *الهاتف:* ${phone}`;
             const whatsappLink = `https://wa.me/${phone.replace('+', '')}`;
+            
+            // إضافة زر الواتساب في تليجرام
             const keyboard = JSON.stringify({
                 inline_keyboard: [[{ text: "💬 مراسلة العميل واتساب", url: whatsappLink }]]
             });
 
-            const url = `https://api.telegram.org/bot8903499642:AAF7pr2pgezLcHuoGs2p9BIOzv5Sk65TpUM/sendMessage?chat_id=8827840980&text=${encodeURIComponent(msg)}&parse_mode=Markdown&reply_markup=${encodeURIComponent(keyboard)}`;
+            // إرسال للـ API الخاص بتليجرام
+            const token = "8903499642:AAF7pr2pgezLcHuoGs2p9BIOzv5Sk65TpUM";
+            const chatId = "8827840980";
+            const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(msg)}&parse_mode=Markdown&reply_markup=${encodeURIComponent(keyboard)}`;
 
-            const res = await fetch(url);
-            if(res.ok) {
-                localStorage.setItem(phone, "done");
-                alert("✅ تم إرسال الطلب!");
-            }
-        }
-    </script>
-</body>
-</html>
-                inline_keyboard: [[{ text: "💬 مراسلة العميل واتساب", url: whatsappLink }]]
-            });
-
-            const url = `https://api.telegram.org/bot8903499642:AAF7pr2pgezLcHuoGs2p9BIOzv5Sk65TpUM/sendMessage?chat_id=8827840980&text=${encodeURIComponent(msg)}&parse_mode=Markdown&reply_markup=${encodeURIComponent(keyboard)}`;
-
-            const res = await fetch(url);
-            if(res.ok) {
-                localStorage.setItem(phone, "done");
-                alert("✅ تم إرسال الطلب!");
-            }
-        }
-
-        // دالة مسح السجلات
-        function clearData() {
-            if(confirm("هل أنت متأكد؟ سيتم مسح كافة الأرقام المسجلة محلياً.")) {
-                localStorage.clear();
-                alert("✅ تم المسح بنجاح!");
+            try {
+                const res = await fetch(url);
+                if(res.ok) {
+                    localStorage.setItem(phone, "done");
+                    alert("✅ تم إرسال طلبك بنجاح!");
+                } else {
+                    alert("حدث خطأ أثناء الإرسال، حاول مرة أخرى.");
+                }
+            } catch (error) {
+                alert("تأكد من اتصالك بالإنترنت.");
             }
         }
     </script>
