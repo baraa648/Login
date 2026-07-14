@@ -2,48 +2,49 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>احجز مكانك الآن</title>
+    <title>حجزك بضغطة زر</title>
     <style>
-        body { font-family: 'Cairo', sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: #1e293b; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 400px; text-align: center; }
-        h2 { margin-bottom: 20px; color: #38bdf8; }
-        input { width: 90%; padding: 15px; margin: 10px 0; border: none; border-radius: 10px; background: #334155; color: white; }
-        button { width: 100%; padding: 15px; margin-top: 10px; background: #0ea5e9; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #0284c7; }
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        body { font-family: 'Cairo', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); padding: 40px; border-radius: 25px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); border: 1px solid rgba(255, 255, 255, 0.18); width: 100%; max-width: 350px; text-align: center; color: white; }
+        h2 { margin-bottom: 25px; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 12px; box-sizing: border-box; background: rgba(255,255,255,0.2); color: white; outline: none; }
+        input::placeholder { color: rgba(255,255,255,0.7); }
+        button { width: 100%; padding: 15px; background: #ffffff; color: #764ba2; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        button:hover { background: #f0f0f0; transform: scale(1.02); }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2>🚀 احجز طلبك الآن</h2>
-        <input type="text" id="name" placeholder="👤 اسمك الكريم">
-        <input type="text" id="phone" placeholder="📱 رقم الهاتف (بدولتك)">
-        <button onclick="submitOrder()">إتمام الحجز</button>
+        <h2>✨ حجز الخدمة</h2>
+        <input type="text" id="name" placeholder="الاسم الكريم">
+        <input type="text" id="phone" placeholder="رقم الهاتف (مثل 01061704158)">
+        <button onclick="submitOrder()">تأكيد الطلب</button>
     </div>
 
     <script>
-        // تخزين الأرقام محلياً لمنع السبام (localStorage)
         function submitOrder() {
             const name = document.getElementById('name').value;
             const phone = document.getElementById('phone').value;
 
-            // 1. فلترة أرقام الدول (مصر، السعودية، الإمارات، الأردن، الكويت)
-            const phoneRegex = /^(01|05|09|07|966|971)\d{7,9}$/;
-            if (!phoneRegex.test(phone)) { alert("❌ يرجى إدخال رقم هاتف صحيح"); return; }
+            // التحقق من الأرقام (مصر 11 رقم، السعودية 10 أرقام)
+            // مصر يبدأ بـ 01 (11 رقم) | السعودية تبدأ بـ 05 (10 أرقام)
+            const patterns = {
+                "مصر": /^01[0-25]\d{8}$/,
+                "السعودية": /^05\d{8}$/
+            };
 
-            // 2. منع السبام
-            if (localStorage.getItem(phone)) { alert("⚠️ هذا الرقم سجل طلب مسبقاً!"); return; }
+            let isValid = false;
+            if (patterns["مصر"].test(phone)) isValid = true;
+            else if (patterns["السعودية"].test(phone)) isValid = true;
 
-            // 3. تنسيق رسالة التليجرام
-            const msg = `🌟 *طلب حجز جديد*%0A👤 *الاسم:* ${name}%0A📱 *الهاتف:* ${phone}%0A⏰ *الوقت:* ${new Date().toLocaleString()}`;
+            if (!isValid) { alert("❌ الرقم غير صحيح! تأكد من مفتاح الدولة وطول الرقم."); return; }
+            if (localStorage.getItem(phone)) { alert("⚠️ هذا الرقم سجل من قبل!"); return; }
 
+            const msg = `🚀 *طلب جديد*%0A👤 *الاسم:* ${name}%0A📱 *الهاتف:* ${phone}%0A🌍 *المصدر:* موقع الحجز`;
+            
             fetch(`https://api.telegram.org/bot8903499642:AAF7pr2pgezLcHuoGs2p9BIOzv5Sk65TpUM/sendMessage?chat_id=8827840980&text=${msg}&parse_mode=Markdown`)
-            .then(res => {
-                if(res.ok) {
-                    localStorage.setItem(phone, "booked"); // حفظ الرقم لمنع تكراره
-                    alert("✅ تم الحجز بنجاح!");
-                }
-            });
+            .then(res => { if(res.ok) { localStorage.setItem(phone, "done"); alert("✅ تم وصول طلبك بنجاح!"); } });
         }
     </script>
 </body>
