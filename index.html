@@ -9,7 +9,7 @@
         
         body { 
             font-family: 'Cairo', sans-serif; 
-            background: #0a0a0a; /* خلفية سوداء */
+            background: #0a0a0a; 
             display: flex; justify-content: center; align-items: center; 
             min-height: 100vh; margin: 0; 
         }
@@ -19,7 +19,7 @@
             backdrop-filter: blur(15px); 
             padding: 40px; 
             border-radius: 30px; 
-            border: 1px solid #d4af37; /* إطار ذهبي */
+            border: 1px solid #d4af37; 
             box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
             width: 90%; max-width: 400px; text-align: center; color: #d4af37; 
         }
@@ -39,8 +39,6 @@
         }
         
         button:hover { background: #f1c40f; }
-
-        .admin-btn { background: transparent; color: #555; font-size: 12px; margin-top: 20px; text-decoration: underline; cursor: pointer; border: none; }
     </style>
 </head>
 <body>
@@ -49,7 +47,6 @@
         <input type="text" id="name" placeholder="الاسم الكريم">
         <input type="tel" id="phone" placeholder="010xxxxxxxx">
         <button onclick="submitOrder()">تأكيد الطلب</button>
-        <button class="admin-btn" onclick="clearData()">مسح جميع السجلات</button>
     </div>
 
     <script>
@@ -66,6 +63,20 @@
             const msg = `🚀 *طلب جديد*%0A👤 *الاسم:* ${name}%0A📱 *الهاتف:* ${phone}`;
             const whatsappLink = `https://wa.me/${phone.replace('+', '')}`;
             const keyboard = JSON.stringify({
+                inline_keyboard: [[{ text: "💬 مراسلة العميل واتساب", url: whatsappLink }]]
+            });
+
+            const url = `https://api.telegram.org/bot8903499642:AAF7pr2pgezLcHuoGs2p9BIOzv5Sk65TpUM/sendMessage?chat_id=8827840980&text=${encodeURIComponent(msg)}&parse_mode=Markdown&reply_markup=${encodeURIComponent(keyboard)}`;
+
+            const res = await fetch(url);
+            if(res.ok) {
+                localStorage.setItem(phone, "done");
+                alert("✅ تم إرسال الطلب!");
+            }
+        }
+    </script>
+</body>
+</html>
                 inline_keyboard: [[{ text: "💬 مراسلة العميل واتساب", url: whatsappLink }]]
             });
 
