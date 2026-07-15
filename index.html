@@ -2,66 +2,44 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>خدمات الفخامة | الحجز السريع</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حجز الخدمة</title>
     <style>
-        :root { --gold: #d4af37; --bg: #050505; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: #fff; overflow: hidden; }
-        
-        /* الخلفية المتحركة */
-        body::before { content: ""; position: absolute; width: 200%; height: 200%; background: radial-gradient(circle, #1a1a1a 0%, var(--bg) 70%); animation: rotate 20s linear infinite; }
-        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        .card { position: relative; width: 90%; max-width: 380px; padding: 30px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; }
-        
-        h2 { color: var(--gold); margin-bottom: 25px; font-size: 24px; }
-        input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid rgba(212,175,55,0.5); border-radius: 12px; background: rgba(0,0,0,0.4); color: white; box-sizing: border-box; font-size: 16px; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--gold); box-shadow: 0 0 10px rgba(212,175,55,0.2); }
-        
-        button { width: 100%; padding: 16px; margin-top: 15px; background: linear-gradient(135deg, var(--gold), #aa8c00); border: none; border-radius: 12px; color: black; font-weight: bold; font-size: 16px; cursor: pointer; transition: transform 0.2s, opacity 0.3s; }
-        button:active { transform: scale(0.98); }
-        
-        #msg { margin-top: 20px; font-size: 14px; min-height: 20px; }
+        body { font-family: 'Cairo', sans-serif; background: #050505; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; color: #fff; }
+        .card { width: 90%; max-width: 380px; padding: 30px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 25px; text-align: center; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid rgba(212,175,55,0.5); border-radius: 12px; background: rgba(0,0,0,0.4); color: white; box-sizing: border-box; outline: none; }
+        button { width: 100%; padding: 16px; margin-top: 15px; background: #d4af37; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
-
     <div class="card">
         <h2>✨ احجز خدمتك الآن</h2>
         <form id="bookingForm">
             <input type="text" id="name" placeholder="👤 اسمك الكريم" required>
-            <input type="tel" id="phone" placeholder="📱 رقم الهاتف (مثال: 010xxxxxxxx)" required>
+            <input type="tel" id="phone" placeholder="📱 الرقم (مثال: 010xxxxxxxx)" required>
             <button type="submit" id="submitBtn">تأكيد الطلب</button>
         </form>
-        <div id="msg"></div>
+        <div id="msg" style="margin-top:20px;"></div>
     </div>
 
     <script>
-        const btn = document.getElementById("submitBtn");
-        const msg = document.getElementById("msg");
-
         document.getElementById("bookingForm").addEventListener("submit", async (e) => {
             e.preventDefault();
-            const data = { 
-                name: document.getElementById("name").value.trim(), 
-                phone: document.getElementById("phone").value.trim() 
-            };
+            const btn = document.getElementById("submitBtn");
+            const msg = document.getElementById("msg");
+            const data = { name: document.getElementById("name").value.trim(), phone: document.getElementById("phone").value.trim() };
             
-            btn.disabled = true; 
-            btn.innerText = "⏳ جاري المعالجة...";
-            
+            btn.disabled = true; btn.innerText = "⏳ جاري المعالجة...";
             try {
                 const res = await fetch("https://young-scene-bd39.sniber489.workers.dev/", {
-                    method: 'POST', 
-                    body: JSON.stringify(data)
+                    method: 'POST', body: JSON.stringify(data)
                 });
-                
                 const result = await res.json().catch(() => ({}));
                 if (result.status === "admin_trigger") { alert("✅ تم مسح السجلات!"); location.reload(); }
-                else if (res.status === 403) { msg.innerHTML = "⚠️ الرقم مسجل مسبقاً!"; }
-                else if (res.ok) { msg.innerHTML = "<span style='color:var(--gold)'>✅ تم تأكيد طلبك بنجاح!</span>"; }
-            } catch { msg.innerHTML = "❌ خطأ في الاتصال!"; }
+                else if (res.status === 400) { alert("❌ رقم الهاتف غير صحيح!"); }
+                else if (res.status === 403) { alert("⚠️ هذا الرقم سجل مسبقاً!"); }
+                else if (res.ok) { alert("✅ تم الحجز بنجاح!"); }
+            } catch { alert("خطأ في الاتصال!"); }
             finally { btn.disabled = false; btn.innerText = "تأكيد الطلب"; }
         });
     </script>
